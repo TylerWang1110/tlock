@@ -5,10 +5,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.tyler.tlock.tlock.R;
+import com.tyler.tlock.tlock.dao.DBUtil;
 import com.tyler.tlock.tlock.model.AppInfo;
 
 import java.util.List;
@@ -44,27 +44,29 @@ public class AppAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder viewHolder = null;
         if (convertView == null) {
-            convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_app, parent,false);
+            convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_app, parent, false);
             viewHolder = new ViewHolder(convertView);
             convertView.setTag(viewHolder);
         }
         viewHolder = (ViewHolder) convertView.getTag();
 
-     viewHolder.ivAppIcon.setImageDrawable(getItem(position).icon);
-        viewHolder.tvAppName.setText(getItem(position).name);
-        viewHolder.sw.setChecked(getItem(position).isLocked);
+        AppInfo item = getItem(position);
+        viewHolder.ivAppIcon.setImageDrawable(item.icon);
+        viewHolder.tvAppName.setText(item.name);
+        boolean isLocked = DBUtil.queryIsLocked(parent.getContext(), item.packageName);
+        viewHolder.iv.setImageResource(isLocked ? R.mipmap.btn_l_lock : R.mipmap.btn_l_onlock);
         return convertView;
     }
 
     private static class ViewHolder {
         ImageView ivAppIcon;
         TextView tvAppName;
-        Switch sw;
+        ImageView iv;
 
         public ViewHolder(View convertView) {
             ivAppIcon = (ImageView) convertView.findViewById(R.id.iv_item_appicon);
             tvAppName = (TextView) convertView.findViewById(R.id.tv_item_appname);
-            sw = (Switch) convertView.findViewById(R.id.sw_item);
+            iv = (ImageView) convertView.findViewById(R.id.iv_item_lock);
         }
     }
 }

@@ -9,11 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Switch;
 
 import com.tyler.tlock.tlock.R;
 import com.tyler.tlock.tlock.adapter.AppAdapter;
+import com.tyler.tlock.tlock.dao.DBUtil;
 import com.tyler.tlock.tlock.model.AppInfo;
 import com.tyler.tlock.tlock.presenter.AllAppPresenterImpl;
 
@@ -34,20 +35,23 @@ public class AllAppFragment extends Fragment implements AllAppView, AdapterView.
     ListView mLvContent;
     private AllAppPresenterImpl mAllAppPresenter;
     private List<AppInfo> mAllAppInfos;
+    private AppAdapter mAdapter;
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle
+            savedInstanceState) {
         View contentView = LayoutInflater.from(getContext()).inflate(R.layout.layout_allapp, null);
         ButterKnife.bind(this, contentView);
-        mAllAppPresenter = new AllAppPresenterImpl(this);
+        mAllAppPresenter = new AllAppPresenterImpl(getContext(), this);
         return contentView;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         mAllAppInfos = mAllAppPresenter.getAllAppInfos();
-        mLvContent.setAdapter(new AppAdapter(mAllAppInfos));
+        mAdapter = new AppAdapter(mAllAppInfos);
+        mLvContent.setAdapter(mAdapter);
         mLvContent.setOnItemClickListener(this);
     }
 
@@ -60,8 +64,16 @@ public class AllAppFragment extends Fragment implements AllAppView, AdapterView.
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Switch sw = (Switch) view.findViewById(R.id.sw_item);
-        boolean selected = sw.isSelected();
-        sw.setChecked(!selected);
+        //        Switch sw = (Switch) view.findViewById(R.id.sw_item);
+        //        boolean selected = sw.isSelected();
+        //        sw.setChecked(!selected);
+
+        AppInfo appInfo = mAllAppInfos.get(position);
+        String packageName = appInfo.packageName;
+        boolean isLocked = appInfo.isLocked;
+        ImageView iv = (ImageView) view.findViewById(R.id.iv_item_lock);
+        iv.setImageResource(isLocked ? R.mipmap.btn_l_lock : R.mipmap.btn_l_onlock);
+        DBUtil.saveStatuToDB(this.getContext(), packageName, !isLocked);
+        mAdapter.notifyDataSetChanged();
     }
 }

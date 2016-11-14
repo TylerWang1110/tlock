@@ -11,10 +11,13 @@ public class AppInfo {
     public boolean isLocked;
     public String name;
     public Drawable icon;
+    public String packageName;
 
-    public AppInfo(Drawable icon, boolean isLocked, String name) {
+    public AppInfo(Drawable icon, boolean isLocked, String name , String packageName) {
         this.icon = icon;
         this.name = name;
         this.isLocked = isLocked;
+        this.packageName = packageName;
     }
+
 }

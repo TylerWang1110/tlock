@@ -1,10 +1,12 @@
 package com.tyler.tlock.tlock.presenter;
 
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.support.v4.app.Fragment;
 
+import com.tyler.tlock.tlock.dao.DBUtil;
 import com.tyler.tlock.tlock.model.AppInfo;
 import com.tyler.tlock.tlock.view.AllAppView;
 
@@ -18,9 +20,13 @@ import java.util.List;
  */
 public class AllAppPresenterImpl implements AllAppPresenter {
     private final AllAppView mAllAppView;
+    private final Context mContext;
 
-    public AllAppPresenterImpl(AllAppView allAppView) {
+
+    public AllAppPresenterImpl(Context context, AllAppView allAppView) {
         this.mAllAppView = allAppView;
+        mContext = context;
+
     }
 
     @Override
@@ -30,9 +36,15 @@ public class AllAppPresenterImpl implements AllAppPresenter {
         PackageManager packageManager = fragment.getActivity().getPackageManager();
         List<ApplicationInfo> installedApplications = packageManager.getInstalledApplications(0);
         for (ApplicationInfo installedApplication : installedApplications) {
-            Drawable drawable = installedApplication.loadIcon(packageManager);
-            String name = installedApplication.loadLabel(packageManager).toString();
-            appInfos.add(new AppInfo(drawable,false,name));
+            //获取所有非系统应用
+            if ((installedApplication.flags & ApplicationInfo.FLAG_SYSTEM) <= 0) {
+                Drawable drawable = installedApplication.loadIcon(packageManager);
+                String name = installedApplication.loadLabel(packageManager).toString();
+                String packageName = installedApplication.packageName;
+                boolean isLocked = DBUtil.queryIsLocked(mContext,packageName);
+                AppInfo appInfo = new AppInfo(drawable, isLocked, name, packageName);
+                appInfos.add(appInfo);
+            }
         }
         return appInfos;
     }
